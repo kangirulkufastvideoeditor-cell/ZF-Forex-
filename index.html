@@ -33,6 +33,7 @@
     <h2>ZF-CORE SYSTEM</h2>
     <p class="subtitle">Stasiun Pemantau Kuantum Real-Time V16.3</p>
     
+    <!-- Pindah Tab Pasar -->
     <div class="tab-menu">
         <button id="btnForex" class="tab-btn active" onclick="gantiMode('FOREX')">FOREX & GOLD</button>
         <button id="btnCrypto" class="tab-btn" onclick="gantiMode('CRYPTO')">CRYPTO MARKET</button>
@@ -68,8 +69,11 @@
 
 <script>
     let modeAktif = "FOREX";
-    let sedangBicara = false;
     let suaraTerkunci = false;
+
+    // File Audio Siren Digital Anti-Blokir Sistem Android WebView
+    let audioAlarm = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
+    audioAlarm.loop = true; // Alarm mengunci berulang-ulang selama masih di zona merah
 
     const listForex = [
         { name: "XAU / USD (Gold / Emas)", value: "XAUUSD" },
@@ -103,20 +107,34 @@
         });
         muatUlangData();
     }
-function kunciIzinSuara() {
-    suaraTerkunci = true;
-    let pemicu = new SpeechSynthesisUtterance("Sistem Audio ZF Siaga Penuh");
-    pemicu.lang = "id-ID";
-    window.speechSynthesis.speak(pemicu);
-    ...
-}
 
-function teriakanAlarm(pesan) {
-    if (suaraTerkunci && !sedangBicara) {
-        ...
+    function kunciIzinSuara() {
+        suaraTerkunci = true;
+        
+        // Pancingan Audio Pertama Agar Sistem Android Mengizinkan Background Media Playback
+        audioAlarm.play().then(() => {
+            setTimeout(() => { 
+                audioAlarm.pause(); 
+                audioAlarm.currentTime = 0;
+            }, 600);
+        }).catch(e => console.log("Izin Hardware Audio Aktif"));
+        
+        const btn = document.getElementById('audioBtn');
+        btn.innerText = "🔒 ALARM AUDIO SIAGA";
+        btn.classList.add('active');
     }
-}
 
+    function teriakanAlarm() {
+        if (suaraTerkunci && audioAlarm.paused) {
+            audioAlarm.play().catch(e => console.log("Audio tertahan keamanan perangkat"));
+        }
+    }
+
+    function matikanAlarmOtomatis() {
+        if (!audioAlarm.paused) {
+            audioAlarm.pause();
+            audioAlarm.currentTime = 0;
+        }
     }
 
     async function muatUlangData() {
@@ -140,7 +158,6 @@ function teriakanAlarm(pesan) {
                 pPure = pMarket * (1 + (Math.random() - 0.5) * (aset === "XAUUSD" ? 0.0018 : 0.0022));
                 vEst = Math.floor(Math.random() * 4500) + (aset === "XAUUSD" ? 4500 : 2500);
             } else {
-                // Mode Crypto memakai tracker fluktuasi data global
                 const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin&vs_currencies=usd');
                 const data = await res.json();
                 if (aset === "BTCUSDT") pMarket = data.bitcoin.usd;
@@ -160,7 +177,7 @@ function teriakanAlarm(pesan) {
             
             hitungMatematikaZF(pMarket, pPure, vEst, vTotal, aset);
         } catch (e) {
-            console.log("Koneksi aman, memuat ulang...");
+            console.log("Koneksi aman, sinkronisasi ulang...");
         }
     }
 
@@ -180,24 +197,25 @@ function teriakanAlarm(pesan) {
             badge.innerText = "FASE KRITIS: GEOMETRI COLLAPSE";
             badge.style.backgroundColor = "#f85149";
             badge.style.color = "#fff";
-            
-            let namaPanggilan = aset === "XAUUSD" ? "Emas" : (aset === "BTCUSDT" ? "Bitcoin" : aset);
-            teriakanAlarm("Peringatan! " + namaPanggilan + " masuk fase kritis! Segera periksa titik deviasi harga!");
+            teriakanAlarm(); // Jalankan sirine melengking
         } else if (zfScore < 0.38) {
             badge.innerText = "FASE STABIL: LAMINAR RESONANCE";
             badge.style.backgroundColor = "#238636";
             badge.style.color = "#fff";
+            matikanAlarmOtomatis(); // Amankan sirine jika pasar kembali tenang
         } else {
             badge.innerText = "FASE WASPADA: DISTORSI MODERAT";
             badge.style.backgroundColor = "#d29922";
             badge.style.color = "#0d1117";
+            matikanAlarmOtomatis(); // Amankan sirine jika pasar kembali tenang
         }
     }
 
     window.onload = function() {
         gantiMode("FOREX");
-        setInterval(muatUlangData, 5000);
+        setInterval(muatUlangData, 5000); // Detak hitung kuantum real-time setiap 5 detik
     };
 </script>
 </body>
 </html>
+
