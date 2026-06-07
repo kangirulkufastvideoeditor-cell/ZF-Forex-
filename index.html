@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZF-CORE V16.3 MONITOR</title>
+    <title>ZF-CORE V16.4 MONITOR EXTRA LOUD</title>
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: Arial, sans-serif; padding: 15px; text-align: center; margin: 0; }
         .container { background-color: #161b22; border: 2px solid #30363d; border-radius: 15px; padding: 20px; max-width: 400px; margin: 10px auto; box-shadow: 0px 4px 15px rgba(0,0,0,0.5); }
@@ -31,7 +31,7 @@
 
 <div class="container">
     <h2>ZF-CORE SYSTEM</h2>
-    <p class="subtitle">Stasiun Pemantau Kuantum Real-Time V16.3</p>
+    <p class="subtitle">Stasiun Pemantau Kuantum Real-Time V16.4</p>
     
     <!-- Pindah Tab Pasar -->
     <div class="tab-menu">
@@ -71,9 +71,10 @@
     let modeAktif = "FOREX";
     let suaraTerkunci = false;
 
-    // File Audio Siren Digital Anti-Blokir Sistem Android WebView
-    let audioAlarm = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
-    audioAlarm.loop = true; // Alarm mengunci berulang-ulang selama masih di zona merah
+    // MENGGUNAKAN AUDIO SIRINE FREKUENSI TINGGI (MELENGKING SUPREMASI)
+    let audioAlarm = new Audio("https://raw.githubusercontent.com/rafaelreis-7/Synthesizer/master/src/assets/sounds/alarm.mp3");
+    audioAlarm.loop = true; 
+    audioAlarm.volume = 1.0; // Paksa volume internal browser ke tingkat maksimum (100%)
 
     const listForex = [
         { name: "XAU / USD (Gold / Emas)", value: "XAUUSD" },
@@ -111,13 +112,13 @@
     function kunciIzinSuara() {
         suaraTerkunci = true;
         
-        // Pancingan Audio Pertama Agar Sistem Android Mengizinkan Background Media Playback
+        // Pancingan Audio Pertama
         audioAlarm.play().then(() => {
             setTimeout(() => { 
                 audioAlarm.pause(); 
                 audioAlarm.currentTime = 0;
-            }, 600);
-        }).catch(e => console.log("Izin Hardware Audio Aktif"));
+            }, 500);
+        }).catch(e => console.log("Izin hardware aktif"));
         
         const btn = document.getElementById('audioBtn');
         btn.innerText = "🔒 ALARM AUDIO SIAGA";
@@ -126,7 +127,7 @@
 
     function teriakanAlarm() {
         if (suaraTerkunci && audioAlarm.paused) {
-            audioAlarm.play().catch(e => console.log("Audio tertahan keamanan perangkat"));
+            audioAlarm.play().catch(e => console.log("Audio tertahan"));
         }
     }
 
@@ -177,7 +178,7 @@
             
             hitungMatematikaZF(pMarket, pPure, vEst, vTotal, aset);
         } catch (e) {
-            console.log("Koneksi aman, sinkronisasi ulang...");
+            console.log("Sinkronisasi ulang aman...");
         }
     }
 
@@ -197,25 +198,25 @@
             badge.innerText = "FASE KRITIS: GEOMETRI COLLAPSE";
             badge.style.backgroundColor = "#f85149";
             badge.style.color = "#fff";
-            teriakanAlarm(); // Jalankan sirine melengking
+            teriakanAlarm(); 
         } else if (zfScore < 0.38) {
             badge.innerText = "FASE STABIL: LAMINAR RESONANCE";
             badge.style.backgroundColor = "#238636";
             badge.style.color = "#fff";
-            matikanAlarmOtomatis(); // Amankan sirine jika pasar kembali tenang
+            matikanAlarmOtomatis(); 
         } else {
             badge.innerText = "FASE WASPADA: DISTORSI MODERAT";
             badge.style.backgroundColor = "#d29922";
             badge.style.color = "#0d1117";
-            matikanAlarmOtomatis(); // Amankan sirine jika pasar kembali tenang
+            matikanAlarmOtomatis(); 
         }
     }
 
     window.onload = function() {
         gantiMode("FOREX");
-        setInterval(muatUlangData, 5000); // Detak hitung kuantum real-time setiap 5 detik
+        setInterval(muatUlangData, 5000); 
     };
 </script>
 </body>
-</html>
-
+    </html>
+    
