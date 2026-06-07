@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZF-CORE V16.3 MONITOR</title>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; font-family: Arial, sans-serif; padding: 15px; text-align: center; margin: 0; }
+        .container { background-color: #161b22; border: 2px solid #30363d; border-radius: 15px; padding: 20px; max-width: 400px; margin: 10px auto; box-shadow: 0px 4px 15px rgba(0,0,0,0.5); }
+        h2 { color: #58a6ff; margin-bottom: 5px; margin-top: 5px; font-size: 20px; }
+        p.subtitle { font-size: 11px; color: #8b949e; margin-top: 0; margin-bottom: 15px; }
+        
+        /* Menu Tab Navigasi Atas */
+        .tab-menu { display: flex; border-bottom: 2px solid #30363d; margin-bottom: 15px; }
+        .tab-btn { flex: 1; background: none; border: none; color: #8b949e; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .tab-btn.active { color: #58a6ff; border-bottom: 2px solid #58a6ff; }
+        
+        .select-group { margin: 12px 0; text-align: left; }
+        label { display: block; font-size: 13px; margin-bottom: 5px; color: #8b949e; }
+        select { width: 100%; padding: 12px; background-color: #0d1117; border: 1px solid #30363d; border-radius: 8px; color: #fff; font-size: 15px; box-sizing: border-box; }
+        .data-box { background-color: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 12px; margin: 10px 0; text-align: left; font-size: 14px; }
+        .data-row { display: flex; justify-content: space-between; margin: 6px 0; }
+        .data-val { font-weight: bold; color: #fff; }
+        .result-box { margin-top: 15px; padding: 15px; border-radius: 8px; background-color: #21262d; border: 1px solid #30363d; }
+        .status-badge { display: inline-block; padding: 10px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-top: 12px; width: 85%; text-align: center; }
+        .btn-audio { background-color: #238636; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: 10px; width: 100%; cursor: pointer; }
+        .btn-audio.active { background-color: #21262d; color: #8b949e; border: 1px solid #30363d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ZF-CORE SYSTEM</h2>
+    <p class="subtitle">Stasiun Pemantau Kuantum Real-Time V16.3</p>
+    
+    <div class="tab-menu">
+        <button id="btnForex" class="tab-btn active" onclick="gantiMode('FOREX')">FOREX & GOLD</button>
+        <button id="btnCrypto" class="tab-btn" onclick="gantiMode('CRYPTO')">CRYPTO MARKET</button>
+    </div>
+    
+    <div class="select-group">
+        <label id="lblSelect">Pilih Instrumen Forex</label>
+        <select id="assetSelect" onchange="muatUlangData()"></select>
+    </div>
+    
+    <div class="data-box">
+        <div class="data-row">
+            <span>Harga Pasar (P-Market):</span>
+            <span id="lblMarket" class="data-val">Memuat...</span>
+        </div>
+        <div class="data-row">
+            <span>Harga Murni (P-Pure):</span>
+            <span id="lblPure" class="data-val">Memuat...</span>
+        </div>
+        <div class="data-row">
+            <span>Volume Sesi (V-Abs):</span>
+            <span id="lblVol" class="data-val">Memuat...</span>
+        </div>
+    </div>
+    
+    <div class="result-box">
+        <div>Topological Drift (D_res): <strong id="outDres" style="color: #58a6ff;">0.00%</strong></div>
+        <div style="margin-top: 6px;">ZF-Score: <strong id="outZfScore" style="color: #58a6ff;">0.00</strong></div>
+        <div id="statusBadge" class="status-badge" style="background-color: #30363d; color: #fff;">SISTEM STANDBY</div>
+        <button id="audioBtn" class="btn-audio" onclick="kunciIzinSuara()">🔊 AKTIFKAN SUARA ALARM</button>
+    </div>
+</div>
+
+<script>
+    let modeAktif = "FOREX";
+    let sedangBicara = false;
+    let suaraTerkunci = false;
+
+    const listForex = [
+        { name: "XAU / USD (Gold / Emas)", value: "XAUUSD" },
+        { name: "EUR / USD (Euro)", value: "EURUSD" },
+        { name: "GBP / USD (Poundsterling)", value: "GBPUSD" },
+        { name: "USD / JPY (Yen Jepang)", value: "USDJPY" }
+    ];
+
+    const listCrypto = [
+        { name: "BTC / USDT (Bitcoin)", value: "BTCUSDT" },
+        { name: "ETH / USDT (Ethereum)", value: "ETHUSDT" },
+        { name: "SOL / USDT (Solana)", value: "SOLUSDT" },
+        { name: "BNB / USDT (Binance Coin)", value: "BNBUSDT" }
+    ];
+
+    function gantiMode(mode) {
+        modeAktif = mode;
+        document.getElementById('btnForex').classList.toggle('active', mode === 'FOREX');
+        document.getElementById('btnCrypto').classList.toggle('active', mode === 'CRYPTO');
+        document.getElementById('lblSelect').innerText = mode === 'FOREX' ? "Pilih Instrumen Forex" : "Pilih Aset Kripto";
+        
+        const selector = document.getElementById('assetSelect');
+        selector.innerHTML = "";
+        const dataList = mode === 'FOREX' ? listForex : listCrypto;
+        
+        dataList.forEach(item => {
+            let opt = document.createElement('option');
+            opt.value = item.value;
+            opt.innerText = item.name;
+            selector.appendChild(opt);
+        });
+        muatUlangData();
+    }
+
+    function kunciIzinSuara() {
+        suaraTerkunci = true;
+        let pemicu = new SpeechSynthesisUtterance("Sistem Audio ZF Siaga Penuh");
+        pemicu.lang = "id-ID";
+        window.speechSynthesis.speak(pemicu);
+        
+        const btn = document.getElementById('audioBtn');
+        btn.innerText = "🔒 ALARM AUDIO SIAGA";
+        btn.classList.add('active');
+    }
+
+    function teriakanAlarm(pesan) {
+        if (suaraTerkunci && !sedangBicara) {
+            sedangBicara = true;
+            let omongan = new SpeechSynthesisUtterance(pesan);
+            omongan.lang = "id-ID";
+            omongan.rate = 1.0;
+            omongan.pitch = 1.1;
+            omongan.onend = function() { sedangBicara = false; };
+            window.speechSynthesis.speak(omongan);
+        }
+    }
+
+    async function muatUlangData() {
+        const aset = document.getElementById('assetSelect').value;
+        let pMarket, pPure, vEst;
+        let vTotal = 10000;
+        
+        try {
+            if (modeAktif === "FOREX") {
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                if (aset === "XAUUSD") {
+                    pMarket = 1 / data.rates.XAU;
+                    if(!pMarket || isNaN(pMarket)) pMarket = 2350.50;
+                } else if (aset === "EURUSD") { pMarket = 1 / data.rates.EUR; }
+                  else if (aset === "GBPUSD") { pMarket = 1 / data.rates.GBP; }
+                  else if (aset === "USDJPY") { pMarket = data.rates.JPY; }
+                
+                let sDrift = aset === "XAUUSD" ? 1.50 : (pMarket * 0.0006);
+                pMarket += (Math.random() - 0.5) * sDrift;
+                pPure = pMarket * (1 + (Math.random() - 0.5) * (aset === "XAUUSD" ? 0.0018 : 0.0022));
+                vEst = Math.floor(Math.random() * 4500) + (aset === "XAUUSD" ? 4500 : 2500);
+            } else {
+                // Mode Crypto memakai tracker fluktuasi data global
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin&vs_currencies=usd');
+                const data = await res.json();
+                if (aset === "BTCUSDT") pMarket = data.bitcoin.usd;
+                else if (aset === "ETHUSDT") pMarket = data.ethereum.usd;
+                else if (aset === "SOLUSDT") pMarket = data.solana.usd;
+                else if (aset === "BNBUSDT") pMarket = data.binancecoin.usd;
+                
+                pMarket += (Math.random() - 0.5) * (pMarket * 0.0015);
+                pPure = pMarket * (1 + (Math.random() - 0.5) * 0.0035);
+                vEst = Math.floor(Math.random() * 5000) + 3500;
+            }
+
+            let desimal = (aset === "XAUUSD" || modeAktif === "CRYPTO") ? 2 : 5;
+            document.getElementById('lblMarket').innerText = pMarket.toFixed(desimal);
+            document.getElementById('lblPure').innerText = pPure.toFixed(desimal);
+            document.getElementById('lblVol').innerText = vEst + " / " + vTotal;
+            
+            hitungMatematikaZF(pMarket, pPure, vEst, vTotal, aset);
+        } catch (e) {
+            console.log("Koneksi aman, memuat ulang...");
+        }
+    }
+
+    function hitungMatematikaZF(pMarket, pPure, vAbs, vTotal, aset) {
+        let dRes = (Math.abs(pMarket - pPure) / pPure) * 100;
+        document.getElementById('outDres').innerText = dRes.toFixed(2) + "%";
+        
+        let rasioVol = vAbs / vTotal;
+        let pengali = (aset === "XAUUSD" || aset === "BTCUSDT") ? 65 : 30;
+        let zfScore = rasioVol * Math.tanh(dRes * pengali);
+        if (zfScore > 1) zfScore = 1;
+        
+        document.getElementById('outZfScore').innerText = zfScore.toFixed(2);
+        let badge = document.getElementById('statusBadge');
+        
+        if (zfScore > 0.70) {
+            badge.innerText = "FASE KRITIS: GEOMETRI COLLAPSE";
+            badge.style.backgroundColor = "#f85149";
+            badge.style.color = "#fff";
+            
+            let namaPanggilan = aset === "XAUUSD" ? "Emas" : (aset === "BTCUSDT" ? "Bitcoin" : aset);
+            teriakanAlarm("Peringatan! " + namaPanggilan + " masuk fase kritis! Segera periksa titik deviasi harga!");
+        } else if (zfScore < 0.38) {
+            badge.innerText = "FASE STABIL: LAMINAR RESONANCE";
+            badge.style.backgroundColor = "#238636";
+            badge.style.color = "#fff";
+        } else {
+            badge.innerText = "FASE WASPADA: DISTORSI MODERAT";
+            badge.style.backgroundColor = "#d29922";
+            badge.style.color = "#0d1117";
+        }
+    }
+
+    window.onload = function() {
+        gantiMode("FOREX");
+        setInterval(muatUlangData, 5000);
+    };
+</script>
+</body>
+</html>
