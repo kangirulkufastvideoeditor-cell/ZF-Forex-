@@ -103,28 +103,20 @@
         });
         muatUlangData();
     }
+function kunciIzinSuara() {
+    suaraTerkunci = true;
+    let pemicu = new SpeechSynthesisUtterance("Sistem Audio ZF Siaga Penuh");
+    pemicu.lang = "id-ID";
+    window.speechSynthesis.speak(pemicu);
+    ...
+}
 
-    function kunciIzinSuara() {
-        suaraTerkunci = true;
-        let pemicu = new SpeechSynthesisUtterance("Sistem Audio ZF Siaga Penuh");
-        pemicu.lang = "id-ID";
-        window.speechSynthesis.speak(pemicu);
-        
-        const btn = document.getElementById('audioBtn');
-        btn.innerText = "🔒 ALARM AUDIO SIAGA";
-        btn.classList.add('active');
+function teriakanAlarm(pesan) {
+    if (suaraTerkunci && !sedangBicara) {
+        ...
     }
+}
 
-    function teriakanAlarm(pesan) {
-        if (suaraTerkunci && !sedangBicara) {
-            sedangBicara = true;
-            let omongan = new SpeechSynthesisUtterance(pesan);
-            omongan.lang = "id-ID";
-            omongan.rate = 1.0;
-            omongan.pitch = 1.1;
-            omongan.onend = function() { sedangBicara = false; };
-            window.speechSynthesis.speak(omongan);
-        }
     }
 
     async function muatUlangData() {
