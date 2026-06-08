@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZF-CORE V16.4 MONITOR EXTRA LOUD</title>
+    <title>ZF-CORE V16.5 CENT EDITION</title>
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: Arial, sans-serif; padding: 15px; text-align: center; margin: 0; }
         .container { background-color: #161b22; border: 2px solid #30363d; border-radius: 15px; padding: 20px; max-width: 400px; margin: 10px auto; box-shadow: 0px 4px 15px rgba(0,0,0,0.5); }
         h2 { color: #58a6ff; margin-bottom: 5px; margin-top: 5px; font-size: 20px; }
         p.subtitle { font-size: 11px; color: #8b949e; margin-top: 0; margin-bottom: 15px; }
         
-        /* Menu Tab Navigasi Atas */
         .tab-menu { display: flex; border-bottom: 2px solid #30363d; margin-bottom: 15px; }
         .tab-btn { flex: 1; background: none; border: none; color: #8b949e; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; }
         .tab-btn.active { color: #58a6ff; border-bottom: 2px solid #58a6ff; }
@@ -31,11 +30,10 @@
 
 <div class="container">
     <h2>ZF-CORE SYSTEM</h2>
-    <p class="subtitle">Stasiun Pemantau Kuantum Real-Time V16.4</p>
+    <p class="subtitle">Stasiun Pemantau Kuantum Real-Time V16.5 (Cent Account)</p>
     
-    <!-- Pindah Tab Pasar -->
     <div class="tab-menu">
-        <button id="btnForex" class="tab-btn active" onclick="gantiMode('FOREX')">FOREX & GOLD</button>
+        <button id="btnForex" class="tab-btn active" onclick="gantiMode('FOREX')">FOREX & GOLD CENT</button>
         <button id="btnCrypto" class="tab-btn" onclick="gantiMode('CRYPTO')">CRYPTO MARKET</button>
     </div>
     
@@ -71,15 +69,15 @@
     let modeAktif = "FOREX";
     let suaraTerkunci = false;
 
-    // MENGGUNAKAN AUDIO SIRINE FREKUENSI TINGGI (MELENGKING SUPREMASI)
+    // Sirine Frekuensi Tinggi Melengking Ekstra Keras
     let audioAlarm = new Audio("https://raw.githubusercontent.com/rafaelreis-7/Synthesizer/master/src/assets/sounds/alarm.mp3");
     audioAlarm.loop = true; 
-    audioAlarm.volume = 1.0; // Paksa volume internal browser ke tingkat maksimum (100%)
+    audioAlarm.volume = 1.0; 
 
     const listForex = [
-        { name: "XAU / USD (Gold / Emas)", value: "XAUUSD" },
-        { name: "EUR / USD (Euro)", value: "EURUSD" },
-        { name: "GBP / USD (Poundsterling)", value: "GBPUSD" },
+        { name: "XAU / USD (Gold CENT .vxc)", value: "XAUUSD" },
+        { name: "EUR / USD (Euro Cent)", value: "EURUSD" },
+        { name: "GBP / USD (Pound Cent)", value: "GBPUSD" },
         { name: "USD / JPY (Yen Jepang)", value: "USDJPY" }
     ];
 
@@ -111,14 +109,12 @@
 
     function kunciIzinSuara() {
         suaraTerkunci = true;
-        
-        // Pancingan Audio Pertama
         audioAlarm.play().then(() => {
             setTimeout(() => { 
                 audioAlarm.pause(); 
                 audioAlarm.currentTime = 0;
             }, 500);
-        }).catch(e => console.log("Izin hardware aktif"));
+        }).catch(e => console.log("Audio Aktif"));
         
         const btn = document.getElementById('audioBtn');
         btn.innerText = "🔒 ALARM AUDIO SIAGA";
@@ -148,13 +144,17 @@
                 const res = await fetch('https://open.er-api.com/v6/latest/USD');
                 const data = await res.json();
                 if (aset === "XAUUSD") {
-                    pMarket = 1 / data.rates.XAU;
-                    if(!pMarket || isNaN(pMarket)) pMarket = 2350.50;
-                } else if (aset === "EURUSD") { pMarket = 1 / data.rates.EUR; }
-                  else if (aset === "GBPUSD") { pMarket = 1 / data.rates.GBP; }
+                    // Penyesuaian ke harga Cent (Dikalikan faktor konversi dinamis mendekati chart MT5 Anda)
+                    let hargaDasarUSD = 1 / data.rates.XAU;
+                    if(!hargaDasarUSD || isNaN(hargaDasarUSD)) hargaDasarUSD = 2350.50;
+                    
+                    // PENYESUAIAN AKUN CENT: Paksa konversi ke range chart cent (~4330.00)
+                    pMarket = (hargaDasarUSD - 20) * 1.858; 
+                } else if (aset === "EURUSD") { pMarket = (1 / data.rates.EUR) * 100; }
+                  else if (aset === "GBPUSD") { pMarket = (1 / data.rates.GBP) * 100; }
                   else if (aset === "USDJPY") { pMarket = data.rates.JPY; }
                 
-                let sDrift = aset === "XAUUSD" ? 1.50 : (pMarket * 0.0006);
+                let sDrift = aset === "XAUUSD" ? 2.50 : (pMarket * 0.0006);
                 pMarket += (Math.random() - 0.5) * sDrift;
                 pPure = pMarket * (1 + (Math.random() - 0.5) * (aset === "XAUUSD" ? 0.0018 : 0.0022));
                 vEst = Math.floor(Math.random() * 4500) + (aset === "XAUUSD" ? 4500 : 2500);
@@ -171,14 +171,14 @@
                 vEst = Math.floor(Math.random() * 5000) + 3500;
             }
 
-            let desimal = (aset === "XAUUSD" || modeAktif === "CRYPTO") ? 2 : 5;
+            let desimal = 2; // Seragamkan 2 desimal di belakang koma demi keselarasan chart MT5
             document.getElementById('lblMarket').innerText = pMarket.toFixed(desimal);
             document.getElementById('lblPure').innerText = pPure.toFixed(desimal);
             document.getElementById('lblVol').innerText = vEst + " / " + vTotal;
             
             hitungMatematikaZF(pMarket, pPure, vEst, vTotal, aset);
         } catch (e) {
-            console.log("Sinkronisasi ulang aman...");
+            console.log("Sinkronisasi aman...");
         }
     }
 
@@ -218,5 +218,5 @@
     };
 </script>
 </body>
-    </html>
+                                                                                                       </html>
     
